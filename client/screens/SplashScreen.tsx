@@ -11,7 +11,7 @@ import Animated, {
 
 import { useTheme } from "@/hooks/useTheme";
 import { hasCompletedToday } from "@/storage/localStorage";
-import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { RootStackParamList } from "@/types/navigation";
 
 type SplashScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, "Splash">;

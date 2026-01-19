@@ -1,56 +1,31 @@
 import React from "react";
-import { StyleSheet, View, Pressable } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as Haptics from "expo-haptics";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  FadeIn,
-} from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
+import { ChoiceButton } from "@/components/ChoiceButton";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, Typography } from "@/constants/theme";
-import { getTodayDateString, getQuestionForDate } from "@/storage/localStorage";
-import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { Spacing, Typography } from "@/constants/theme";
+import { saveEntry, ClarityChoice } from "@/storage/localStorage";
+import { RootStackParamList } from "@/types/navigation";
 
 type QuestionScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, "Question">;
 };
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const CHOICES: ClarityChoice[] = ["Focus", "Calm", "Energy"];
 
 export default function QuestionScreen({ navigation }: QuestionScreenProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
-  const buttonScale = useSharedValue(1);
 
-  const today = getTodayDateString();
-  const question = getQuestionForDate(today);
-
-  const formattedDate = new Date(today).toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
-
-  const buttonAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: buttonScale.value }],
-  }));
-
-  const handlePressIn = () => {
-    buttonScale.value = withSpring(0.96, { damping: 15, stiffness: 150 });
-  };
-
-  const handlePressOut = () => {
-    buttonScale.value = withSpring(1, { damping: 15, stiffness: 150 });
-  };
-
-  const handleReflect = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    navigation.navigate("Note", { question });
+  const handleChoice = async (choice: ClarityChoice) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await saveEntry(choice);
+    navigation.replace("Confirmation", { choice });
   };
 
   return (
@@ -68,49 +43,23 @@ export default function QuestionScreen({ navigation }: QuestionScreenProps) {
         entering={FadeIn.duration(400).delay(100)}
         style={styles.content}
       >
-        <ThemedText
-          style={[
-            styles.dateLabel,
-            { color: theme.textSecondary },
-          ]}
-        >
-          {formattedDate.toUpperCase()}
-        </ThemedText>
-
-        <ThemedText
-          style={[
-            styles.question,
-            { color: theme.text },
-          ]}
-        >
-          {question}
+        <ThemedText style={[styles.question, { color: theme.text }]}>
+          What matters most today?
         </ThemedText>
       </Animated.View>
 
       <Animated.View
         entering={FadeIn.duration(400).delay(300)}
-        style={styles.buttonContainer}
+        style={styles.choicesContainer}
       >
-        <AnimatedPressable
-          onPress={handleReflect}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          style={[
-            styles.button,
-            { backgroundColor: theme.link },
-            buttonAnimatedStyle,
-          ]}
-          testID="button-reflect"
-        >
-          <ThemedText
-            style={[
-              styles.buttonText,
-              { color: theme.buttonText },
-            ]}
-          >
-            Reflect
-          </ThemedText>
-        </AnimatedPressable>
+        {CHOICES.map((choice) => (
+          <ChoiceButton
+            key={choice}
+            label={choice}
+            onPress={() => handleChoice(choice)}
+            testID={`button-${choice.toLowerCase()}`}
+          />
+        ))}
       </Animated.View>
     </View>
   );
@@ -128,25 +77,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: Spacing.lg,
   },
-  dateLabel: {
-    ...Typography.label,
-    marginBottom: Spacing["3xl"],
-  },
   question: {
     ...Typography.display,
     textAlign: "center",
   },
-  buttonContainer: {
+  choicesContainer: {
     width: "100%",
-  },
-  button: {
-    width: "100%",
-    height: Spacing.buttonHeight,
-    borderRadius: BorderRadius.none,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonText: {
-    ...Typography.button,
+    gap: Spacing.lg,
   },
 });

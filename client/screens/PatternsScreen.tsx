@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, FlatList, Image, Pressable } from "react-native";
+import { StyleSheet, View, FlatList, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
@@ -35,11 +35,6 @@ export default function PatternsScreen() {
     });
   };
 
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength).trim() + "...";
-  };
-
   const renderEntry = ({
     item,
     index,
@@ -54,31 +49,29 @@ export default function PatternsScreen() {
       <ThemedText style={[styles.entryDate, { color: theme.textSecondary }]}>
         {formatDate(item.date)}
       </ThemedText>
-      <ThemedText style={[styles.entryQuestion, { color: theme.text }]}>
-        {item.question}
-      </ThemedText>
-      <ThemedText
-        style={[styles.entryResponse, { color: theme.textSecondary }]}
-      >
-        {truncateText(item.response, 100)}
+      <ThemedText style={[styles.entryChoice, { color: theme.text }]}>
+        {item.choice}
       </ThemedText>
     </Animated.View>
   );
 
   const renderEmpty = () => (
-    <Animated.View entering={FadeIn.duration(400)} style={styles.emptyContainer}>
+    <Animated.View
+      entering={FadeIn.duration(400)}
+      style={styles.emptyContainer}
+    >
       <Image
         source={require("../../assets/images/empty-patterns.png")}
         style={styles.emptyImage}
         resizeMode="contain"
       />
       <ThemedText style={[styles.emptyTitle, { color: theme.text }]}>
-        No entries yet
+        No check-ins yet
       </ThemedText>
       <ThemedText
         style={[styles.emptySubtext, { color: theme.textSecondary }]}
       >
-        Your reflection patterns will appear here
+        Your patterns will appear here
       </ThemedText>
     </Animated.View>
   );
@@ -146,18 +139,16 @@ const styles = StyleSheet.create({
   entryCard: {
     padding: Spacing.lg,
     borderRadius: BorderRadius.xs,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   entryDate: {
-    ...Typography.label,
-    marginBottom: Spacing.sm,
+    ...Typography.small,
   },
-  entryQuestion: {
+  entryChoice: {
     ...Typography.body,
     fontWeight: "600",
-    marginBottom: Spacing.sm,
-  },
-  entryResponse: {
-    ...Typography.small,
   },
   emptyContainer: {
     alignItems: "center",

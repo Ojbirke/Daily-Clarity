@@ -5,21 +5,14 @@ import { Feather } from "@expo/vector-icons";
 
 import SplashScreen from "@/screens/SplashScreen";
 import QuestionScreen from "@/screens/QuestionScreen";
-import NoteScreen from "@/screens/NoteScreen";
 import ConfirmationScreen from "@/screens/ConfirmationScreen";
 import LockedScreen from "@/screens/LockedScreen";
 import PatternsScreen from "@/screens/PatternsScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
+import { RootStackParamList } from "@/types/navigation";
 
-export type RootStackParamList = {
-  Splash: undefined;
-  Question: undefined;
-  Note: { question: string };
-  Confirmation: undefined;
-  Locked: undefined;
-  Patterns: undefined;
-};
+export type { RootStackParamList };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -38,20 +31,6 @@ export default function RootStackNavigator() {
     >
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Question" component={QuestionScreen} />
-      <Stack.Screen
-        name="Note"
-        component={NoteScreen}
-        options={({ navigation }) => ({
-          headerShown: true,
-          headerTitle: "",
-          headerLeft: () => (
-            <HeaderButton onPress={() => navigation.goBack()}>
-              <Feather name="x" size={24} color={theme.text} />
-            </HeaderButton>
-          ),
-          animation: "slide_from_bottom",
-        })}
-      />
       <Stack.Screen name="Confirmation" component={ConfirmationScreen} />
       <Stack.Screen name="Locked" component={LockedScreen} />
       <Stack.Screen

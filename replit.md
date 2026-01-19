@@ -1,7 +1,7 @@
 # Daily Clarity
 
 ## Overview
-Daily Clarity is a minimalist daily reflection app that helps users build a reflection habit through one simple prompt per day. The app enforces discipline by allowing only one entry per day - once completed, the app locks until midnight.
+Daily Clarity is a minimalist daily check-in app that helps users start their day with intention. One simple question: "What matters most today?" with three choices: Focus, Calm, or Energy. One check-in per calendar day - once completed, the app locks until tomorrow.
 
 ## Architecture
 
@@ -13,6 +13,7 @@ Daily Clarity is a minimalist daily reflection app that helps users build a refl
   - Fully offline functionality using AsyncStorage
   - Stack-only navigation (linear daily flow)
   - Brutalist minimal design with near-monochromatic palette
+  - One check-in per calendar day enforcement
 
 ### Backend (Django + DRF)
 - **Location**: `/backend`
@@ -25,12 +26,11 @@ Daily Clarity is a minimalist daily reflection app that helps users build a refl
   - GET /stats/summary
 
 ## App Flow
-1. **SplashScreen** → Brief brand moment (0.5s)
-2. **QuestionScreen** → Today's reflection prompt
-3. **NoteScreen** → Text entry for response
-4. **ConfirmationScreen** → Entry saved confirmation
-5. **LockedScreen** → Shows when already completed today
-6. **PatternsScreen** → View past entries (premium feature gate)
+1. **SplashScreen** - Brief brand moment (0.5s)
+2. **QuestionScreen** - "What matters most today?" with 3 choices
+3. **ConfirmationScreen** - Shows selected choice
+4. **LockedScreen** - Shows when already checked in today
+5. **PatternsScreen** - View past check-ins (premium feature gate)
 
 ## Key Files
 
@@ -40,18 +40,18 @@ Daily Clarity is a minimalist daily reflection app that helps users build a refl
 - `client/storage/localStorage.ts` - AsyncStorage utilities for entries
 - `client/constants/theme.ts` - Colors, spacing, typography
 - `client/screens/` - All screen components
+- `client/components/ChoiceButton.tsx` - Choice selection button
 
 ### Backend
 - `backend/manage.py` - Django management script
 - `backend/core/settings.py` - Django configuration
-- `backend/core/urls.py` - URL routing
 - `backend/entries/models.py` - Entry model for PostgreSQL
 
 ## Design Guidelines
 - **Aesthetic**: Brutally minimal, maximum whitespace
 - **Colors**: Near-black (#1A1A1A) on white (#FFFFFF)
 - **Typography**: System fonts, specific size scale
-- **Memorable Element**: The locked state after daily completion
+- **Memorable Element**: The locked state after daily check-in
 
 ## Development
 
@@ -66,9 +66,3 @@ cd backend
 pip install -r requirements.txt
 python manage.py runserver
 ```
-
-## User Preferences
-- Minimal UI with text-light interface
-- No authentication required for MVP
-- One entry per day enforcement
-- Offline-first functionality

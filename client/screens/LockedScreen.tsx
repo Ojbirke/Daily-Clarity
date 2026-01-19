@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { StyleSheet, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -14,8 +14,7 @@ import Animated, {
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
-import { getTimeUntilMidnight, formatCountdown } from "@/storage/localStorage";
-import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { RootStackParamList } from "@/types/navigation";
 
 type LockedScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, "Locked">;
@@ -27,18 +26,6 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const buttonScale = useSharedValue(1);
-  const [countdown, setCountdown] = useState("");
-
-  useEffect(() => {
-    const updateCountdown = () => {
-      const { hours, minutes } = getTimeUntilMidnight();
-      setCountdown(formatCountdown(hours, minutes));
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
   const buttonAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: buttonScale.value }],
@@ -71,20 +58,17 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
       <View style={styles.content}>
         <Animated.View
           entering={FadeIn.duration(400).delay(100)}
-          style={[styles.iconContainer, { backgroundColor: theme.backgroundDefault }]}
+          style={[
+            styles.iconContainer,
+            { backgroundColor: theme.backgroundDefault },
+          ]}
         >
           <Feather name="lock" size={48} color={theme.textSecondary} />
         </Animated.View>
 
         <Animated.View entering={FadeIn.duration(400).delay(200)}>
           <ThemedText style={[styles.heading, { color: theme.text }]}>
-            You've reflected today
-          </ThemedText>
-
-          <ThemedText
-            style={[styles.subtext, { color: theme.textSecondary }]}
-          >
-            Next entry unlocks in {countdown}
+            You've already checked in today.
           </ThemedText>
         </Animated.View>
       </View>
@@ -134,11 +118,6 @@ const styles = StyleSheet.create({
   },
   heading: {
     ...Typography.h4,
-    textAlign: "center",
-    marginBottom: Spacing.md,
-  },
-  subtext: {
-    ...Typography.body,
     textAlign: "center",
   },
   buttonContainer: {
