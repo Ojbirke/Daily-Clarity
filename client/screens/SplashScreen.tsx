@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { StyleSheet, View, Image } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -27,6 +28,9 @@ export default function SplashScreen({ navigation }: SplashScreenProps) {
 
   useEffect(() => {
     const checkAndNavigate = async () => {
+      // Clear old data from previous version (one-time migration)
+      await AsyncStorage.removeItem("@daily_clarity_entries");
+      
       const completed = await hasCompletedToday();
 
       const navigate = () => {
