@@ -7,4 +7,5 @@ export type RootStackParamList = {
   Confirmation: { choice: ClarityChoice };
   Locked: undefined;
   Patterns: undefined;
+  PremiumGate: undefined;
 };

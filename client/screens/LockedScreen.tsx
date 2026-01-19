@@ -21,6 +21,8 @@ type LockedScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, "Locked">;
 };
 
+const isPremium = false;
+
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function LockedScreen({ navigation }: LockedScreenProps) {
@@ -51,7 +53,11 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
 
   const handleViewPatterns = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    navigation.navigate("Patterns");
+    if (isPremium) {
+      navigation.navigate("Patterns");
+    } else {
+      navigation.navigate("PremiumGate");
+    }
   };
 
   return (
