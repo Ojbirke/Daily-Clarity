@@ -1,87 +1,65 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, FlatList, Image } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, Typography } from "@/constants/theme";
-import { getAllEntries, DailyEntry } from "@/storage/localStorage";
+import { Spacing, Typography } from "@/constants/theme";
+import { getAllEntries, ClarityChoice } from "@/storage/localStorage";
+
+type ChoiceCounts = Record<ClarityChoice, number>;
 
 export default function PatternsScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { theme } = useTheme();
-  const [entries, setEntries] = useState<DailyEntry[]>([]);
+  const [counts, setCounts] = useState<ChoiceCounts>({
+    Focus: 0,
+    Calm: 0,
+    Energy: 0,
+  });
+  const [mostCommon, setMostCommon] = useState<ClarityChoice | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadEntries();
+    loadPatterns();
   }, []);
 
-  const loadEntries = async () => {
-    const data = await getAllEntries();
-    setEntries(data);
+  const loadPatterns = async () => {
+    const entries = await getAllEntries();
+
+    const newCounts: ChoiceCounts = {
+      Focus: 0,
+      Calm: 0,
+      Energy: 0,
+    };
+
+    entries.forEach((entry) => {
+      if (entry.choice in newCounts) {
+        newCounts[entry.choice]++;
+      }
+    });
+
+    setCounts(newCounts);
+
+    const choices: ClarityChoice[] = ["Focus", "Calm", "Energy"];
+    let maxChoice: ClarityChoice | null = null;
+    let maxCount = 0;
+
+    choices.forEach((choice) => {
+      if (newCounts[choice] > maxCount) {
+        maxCount = newCounts[choice];
+        maxChoice = choice;
+      }
+    });
+
+    setMostCommon(maxChoice);
     setLoading(false);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const renderEntry = ({
-    item,
-    index,
-  }: {
-    item: DailyEntry;
-    index: number;
-  }) => (
-    <Animated.View
-      entering={FadeInDown.duration(300).delay(index * 50)}
-      style={[styles.entryCard, { backgroundColor: theme.backgroundDefault }]}
-    >
-      <View style={styles.entryHeader}>
-        <ThemedText style={[styles.entryDate, { color: theme.textSecondary }]}>
-          {formatDate(item.date)}
-        </ThemedText>
-        <ThemedText style={[styles.entryChoice, { color: theme.text }]}>
-          {item.choice}
-        </ThemedText>
-      </View>
-      {item.note ? (
-        <ThemedText style={[styles.entryNote, { color: theme.textSecondary }]}>
-          {item.note}
-        </ThemedText>
-      ) : null}
-    </Animated.View>
-  );
-
-  const renderEmpty = () => (
-    <Animated.View
-      entering={FadeIn.duration(400)}
-      style={styles.emptyContainer}
-    >
-      <Image
-        source={require("../../assets/images/empty-patterns.png")}
-        style={styles.emptyImage}
-        resizeMode="contain"
-      />
-      <ThemedText style={[styles.emptyTitle, { color: theme.text }]}>
-        No check-ins yet
-      </ThemedText>
-      <ThemedText
-        style={[styles.emptySubtext, { color: theme.textSecondary }]}
-      >
-        Your patterns will appear here
-      </ThemedText>
-    </Animated.View>
-  );
+  const totalEntries = counts.Focus + counts.Calm + counts.Energy;
 
   if (loading) {
     return (
@@ -105,23 +83,65 @@ export default function PatternsScreen() {
 
   return (
     <View
-      style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.backgroundRoot,
+          paddingTop: headerHeight + Spacing["3xl"],
+          paddingBottom: insets.bottom + Spacing["3xl"],
+        },
+      ]}
     >
-      <FlatList
-        data={entries}
-        keyExtractor={(item) => item.date}
-        renderItem={renderEntry}
-        ListEmptyComponent={renderEmpty}
-        contentContainerStyle={[
-          styles.listContent,
-          {
-            paddingTop: headerHeight + Spacing.lg,
-            paddingBottom: insets.bottom + Spacing.lg,
-          },
-          entries.length === 0 && styles.emptyListContent,
-        ]}
-        showsVerticalScrollIndicator={false}
-      />
+      <Animated.View entering={FadeIn.duration(400)} style={styles.content}>
+        <ThemedText style={[styles.title, { color: theme.text }]}>
+          Your patterns
+        </ThemedText>
+
+        <View style={styles.countersContainer}>
+          <View style={styles.counterRow}>
+            <ThemedText style={[styles.counterLabel, { color: theme.text }]}>
+              Focus
+            </ThemedText>
+            <ThemedText
+              style={[styles.counterValue, { color: theme.textSecondary }]}
+            >
+              {counts.Focus} {counts.Focus === 1 ? "day" : "days"}
+            </ThemedText>
+          </View>
+
+          <View style={styles.counterRow}>
+            <ThemedText style={[styles.counterLabel, { color: theme.text }]}>
+              Calm
+            </ThemedText>
+            <ThemedText
+              style={[styles.counterValue, { color: theme.textSecondary }]}
+            >
+              {counts.Calm} {counts.Calm === 1 ? "day" : "days"}
+            </ThemedText>
+          </View>
+
+          <View style={styles.counterRow}>
+            <ThemedText style={[styles.counterLabel, { color: theme.text }]}>
+              Energy
+            </ThemedText>
+            <ThemedText
+              style={[styles.counterValue, { color: theme.textSecondary }]}
+            >
+              {counts.Energy} {counts.Energy === 1 ? "day" : "days"}
+            </ThemedText>
+          </View>
+        </View>
+
+        {totalEntries > 0 && mostCommon ? (
+          <View style={styles.insightContainer}>
+            <ThemedText
+              style={[styles.insightText, { color: theme.textSecondary }]}
+            >
+              You choose {mostCommon} most often
+            </ThemedText>
+          </View>
+        ) : null}
+      </Animated.View>
     </View>
   );
 }
@@ -129,58 +149,39 @@ export default function PatternsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  listContent: {
     paddingHorizontal: Spacing["2xl"],
-    gap: Spacing.lg,
   },
-  emptyListContent: {
+  content: {
     flex: 1,
-    justifyContent: "center",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  entryCard: {
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.xs,
+  title: {
+    ...Typography.h2,
+    marginBottom: Spacing["4xl"],
   },
-  entryHeader: {
+  countersContainer: {
+    gap: Spacing["2xl"],
+  },
+  counterRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  entryDate: {
-    ...Typography.small,
-  },
-  entryChoice: {
+  counterLabel: {
     ...Typography.body,
     fontWeight: "600",
   },
-  entryNote: {
-    ...Typography.small,
-    marginTop: Spacing.sm,
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: Spacing["2xl"],
-  },
-  emptyImage: {
-    width: 160,
-    height: 160,
-    marginBottom: Spacing["2xl"],
-    opacity: 0.6,
-  },
-  emptyTitle: {
-    ...Typography.h4,
-    textAlign: "center",
-    marginBottom: Spacing.sm,
-  },
-  emptySubtext: {
+  counterValue: {
     ...Typography.body,
-    textAlign: "center",
+  },
+  insightContainer: {
+    marginTop: Spacing["4xl"],
+  },
+  insightText: {
+    ...Typography.body,
   },
 });
