@@ -1,30 +1,31 @@
 import { Platform } from "react-native";
 
-const tintColorLight = "#007AFF";
-const tintColorDark = "#0A84FF";
-
 export const Colors = {
   light: {
-    text: "#11181C",
+    text: "#1A1A1A",
+    textSecondary: "#6B6B6B",
     buttonText: "#FFFFFF",
-    tabIconDefault: "#687076",
-    tabIconSelected: tintColorLight,
-    link: "#007AFF",
-    backgroundRoot: "#FFFFFF", // Elevation 0
-    backgroundDefault: "#F2F2F2", // Elevation 1
-    backgroundSecondary: "#E6E6E6", // Elevation 2
-    backgroundTertiary: "#D9D9D9", // Elevation 3
+    tabIconDefault: "#6B6B6B",
+    tabIconSelected: "#1A1A1A",
+    link: "#1A1A1A",
+    backgroundRoot: "#FFFFFF",
+    backgroundDefault: "#F8F8F8",
+    backgroundSecondary: "#F0F0F0",
+    backgroundTertiary: "#E8E8E8",
+    success: "#2D2D2D",
   },
   dark: {
-    text: "#ECEDEE",
-    buttonText: "#FFFFFF",
-    tabIconDefault: "#9BA1A6",
-    tabIconSelected: tintColorDark,
-    link: "#0A84FF",
-    backgroundRoot: "#1F2123", // Elevation 0
-    backgroundDefault: "#2A2C2E", // Elevation 1
-    backgroundSecondary: "#353739", // Elevation 2
-    backgroundTertiary: "#404244", // Elevation 3
+    text: "#FFFFFF",
+    textSecondary: "#9A9A9A",
+    buttonText: "#1A1A1A",
+    tabIconDefault: "#9A9A9A",
+    tabIconSelected: "#FFFFFF",
+    link: "#FFFFFF",
+    backgroundRoot: "#1A1A1A",
+    backgroundDefault: "#252525",
+    backgroundSecondary: "#2D2D2D",
+    backgroundTertiary: "#353535",
+    success: "#E0E0E0",
   },
 };
 
@@ -38,11 +39,13 @@ export const Spacing = {
   "3xl": 32,
   "4xl": 40,
   "5xl": 48,
+  "6xl": 80,
   inputHeight: 48,
   buttonHeight: 52,
 };
 
 export const BorderRadius = {
+  none: 0,
   xs: 8,
   sm: 12,
   md: 18,
@@ -54,6 +57,11 @@ export const BorderRadius = {
 };
 
 export const Typography = {
+  display: {
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: "700" as const,
+  },
   h1: {
     fontSize: 32,
     lineHeight: 40,
@@ -75,14 +83,26 @@ export const Typography = {
     fontWeight: "600" as const,
   },
   body: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 18,
+    lineHeight: 27,
     fontWeight: "400" as const,
   },
   small: {
     fontSize: 14,
     lineHeight: 20,
     fontWeight: "400" as const,
+  },
+  label: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "500" as const,
+    letterSpacing: 0.5,
+    textTransform: "uppercase" as const,
+  },
+  button: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: "600" as const,
   },
   link: {
     fontSize: 16,
@@ -93,13 +113,9 @@ export const Typography = {
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: "system-ui",
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: "ui-serif",
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: "ui-rounded",
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: "ui-monospace",
   },
   default: {

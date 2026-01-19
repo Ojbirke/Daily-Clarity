@@ -1,33 +1,72 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import MainTabNavigator from "@/navigation/MainTabNavigator";
-import ModalScreen from "@/screens/ModalScreen";
+import { HeaderButton } from "@react-navigation/elements";
+import { Feather } from "@expo/vector-icons";
+
+import SplashScreen from "@/screens/SplashScreen";
+import QuestionScreen from "@/screens/QuestionScreen";
+import NoteScreen from "@/screens/NoteScreen";
+import ConfirmationScreen from "@/screens/ConfirmationScreen";
+import LockedScreen from "@/screens/LockedScreen";
+import PatternsScreen from "@/screens/PatternsScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
+import { useTheme } from "@/hooks/useTheme";
 
 export type RootStackParamList = {
-  Main: undefined;
-  Modal: undefined;
+  Splash: undefined;
+  Question: undefined;
+  Note: { question: string };
+  Confirmation: undefined;
+  Locked: undefined;
+  Patterns: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
   const screenOptions = useScreenOptions();
+  const { theme } = useTheme();
 
   return (
-    <Stack.Navigator screenOptions={screenOptions}>
+    <Stack.Navigator
+      screenOptions={{
+        ...screenOptions,
+        headerShown: false,
+        animation: "fade",
+      }}
+      initialRouteName="Splash"
+    >
+      <Stack.Screen name="Splash" component={SplashScreen} />
+      <Stack.Screen name="Question" component={QuestionScreen} />
       <Stack.Screen
-        name="Main"
-        component={MainTabNavigator}
-        options={{ headerShown: false }}
+        name="Note"
+        component={NoteScreen}
+        options={({ navigation }) => ({
+          headerShown: true,
+          headerTitle: "",
+          headerLeft: () => (
+            <HeaderButton onPress={() => navigation.goBack()}>
+              <Feather name="x" size={24} color={theme.text} />
+            </HeaderButton>
+          ),
+          animation: "slide_from_bottom",
+        })}
       />
+      <Stack.Screen name="Confirmation" component={ConfirmationScreen} />
+      <Stack.Screen name="Locked" component={LockedScreen} />
       <Stack.Screen
-        name="Modal"
-        component={ModalScreen}
-        options={{
-          presentation: "modal",
-          headerTitle: "Modal",
-        }}
+        name="Patterns"
+        component={PatternsScreen}
+        options={({ navigation }) => ({
+          headerShown: true,
+          headerTitle: "Patterns",
+          headerLeft: () => (
+            <HeaderButton onPress={() => navigation.goBack()}>
+              <Feather name="arrow-left" size={24} color={theme.text} />
+            </HeaderButton>
+          ),
+          animation: "slide_from_right",
+        })}
       />
     </Stack.Navigator>
   );
