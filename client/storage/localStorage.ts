@@ -7,6 +7,7 @@ export type ClarityChoice = "Focus" | "Calm" | "Energy";
 export interface DailyEntry {
   date: string;
   choice: ClarityChoice;
+  note: string;
   createdAt: string;
 }
 
@@ -34,13 +35,20 @@ export async function getEntryForDate(
   return entries.find((entry) => entry.date === date) || null;
 }
 
-export async function hasCompletedToday(): Promise<boolean> {
+export async function getTodayEntry(): Promise<DailyEntry | null> {
   const today = getTodayDateString();
-  const entry = await getEntryForDate(today);
+  return getEntryForDate(today);
+}
+
+export async function hasCompletedToday(): Promise<boolean> {
+  const entry = await getTodayEntry();
   return entry !== null;
 }
 
-export async function saveEntry(choice: ClarityChoice): Promise<DailyEntry> {
+export async function saveEntry(
+  choice: ClarityChoice,
+  note: string
+): Promise<DailyEntry> {
   const entries = await getAllEntries();
   const today = getTodayDateString();
 
@@ -48,6 +56,7 @@ export async function saveEntry(choice: ClarityChoice): Promise<DailyEntry> {
   const newEntry: DailyEntry = {
     date: today,
     choice,
+    note,
     createdAt: new Date().toISOString(),
   };
 
@@ -59,4 +68,8 @@ export async function saveEntry(choice: ClarityChoice): Promise<DailyEntry> {
 
   await AsyncStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
   return newEntry;
+}
+
+export async function clearAllEntries(): Promise<void> {
+  await AsyncStorage.removeItem(ENTRIES_KEY);
 }

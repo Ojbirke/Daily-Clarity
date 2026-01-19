@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -14,6 +14,7 @@ import Animated, {
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
+import { getTodayEntry, DailyEntry } from "@/storage/localStorage";
 import { RootStackParamList } from "@/types/navigation";
 
 type LockedScreenProps = {
@@ -26,6 +27,15 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const buttonScale = useSharedValue(1);
+  const [todayEntry, setTodayEntry] = useState<DailyEntry | null>(null);
+
+  useEffect(() => {
+    const loadTodayEntry = async () => {
+      const entry = await getTodayEntry();
+      setTodayEntry(entry);
+    };
+    loadTodayEntry();
+  }, []);
 
   const buttonAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: buttonScale.value }],
@@ -67,9 +77,24 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
         </Animated.View>
 
         <Animated.View entering={FadeIn.duration(400).delay(200)}>
-          <ThemedText style={[styles.heading, { color: theme.text }]}>
-            You've already checked in today.
-          </ThemedText>
+          {todayEntry ? (
+            <>
+              <ThemedText style={[styles.focusLabel, { color: theme.text }]}>
+                {todayEntry.choice}
+              </ThemedText>
+              {todayEntry.note ? (
+                <ThemedText
+                  style={[styles.noteText, { color: theme.textSecondary }]}
+                >
+                  {todayEntry.note}
+                </ThemedText>
+              ) : null}
+            </>
+          ) : (
+            <ThemedText style={[styles.heading, { color: theme.text }]}>
+              You've already checked in today.
+            </ThemedText>
+          )}
         </Animated.View>
       </View>
 
@@ -119,6 +144,16 @@ const styles = StyleSheet.create({
   heading: {
     ...Typography.h4,
     textAlign: "center",
+  },
+  focusLabel: {
+    ...Typography.h2,
+    textAlign: "center",
+    marginBottom: Spacing.md,
+  },
+  noteText: {
+    ...Typography.body,
+    textAlign: "center",
+    maxWidth: 280,
   },
   buttonContainer: {
     width: "100%",

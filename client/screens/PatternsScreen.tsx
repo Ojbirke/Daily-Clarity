@@ -46,12 +46,19 @@ export default function PatternsScreen() {
       entering={FadeInDown.duration(300).delay(index * 50)}
       style={[styles.entryCard, { backgroundColor: theme.backgroundDefault }]}
     >
-      <ThemedText style={[styles.entryDate, { color: theme.textSecondary }]}>
-        {formatDate(item.date)}
-      </ThemedText>
-      <ThemedText style={[styles.entryChoice, { color: theme.text }]}>
-        {item.choice}
-      </ThemedText>
+      <View style={styles.entryHeader}>
+        <ThemedText style={[styles.entryDate, { color: theme.textSecondary }]}>
+          {formatDate(item.date)}
+        </ThemedText>
+        <ThemedText style={[styles.entryChoice, { color: theme.text }]}>
+          {item.choice}
+        </ThemedText>
+      </View>
+      {item.note ? (
+        <ThemedText style={[styles.entryNote, { color: theme.textSecondary }]}>
+          {item.note}
+        </ThemedText>
+      ) : null}
     </Animated.View>
   );
 
@@ -139,6 +146,8 @@ const styles = StyleSheet.create({
   entryCard: {
     padding: Spacing.lg,
     borderRadius: BorderRadius.xs,
+  },
+  entryHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -149,6 +158,10 @@ const styles = StyleSheet.create({
   entryChoice: {
     ...Typography.body,
     fontWeight: "600",
+  },
+  entryNote: {
+    ...Typography.small,
+    marginTop: Spacing.sm,
   },
   emptyContainer: {
     alignItems: "center",

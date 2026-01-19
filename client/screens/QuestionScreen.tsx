@@ -9,7 +9,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ChoiceButton } from "@/components/ChoiceButton";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, Typography } from "@/constants/theme";
-import { saveEntry, ClarityChoice } from "@/storage/localStorage";
+import { ClarityChoice } from "@/storage/localStorage";
 import { RootStackParamList } from "@/types/navigation";
 
 type QuestionScreenProps = {
@@ -22,10 +22,9 @@ export default function QuestionScreen({ navigation }: QuestionScreenProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
 
-  const handleChoice = async (choice: ClarityChoice) => {
+  const handleChoice = (choice: ClarityChoice) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await saveEntry(choice);
-    navigation.replace("Confirmation", { choice });
+    navigation.navigate("Note", { choice });
   };
 
   return (

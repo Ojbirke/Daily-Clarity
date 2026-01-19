@@ -1,21 +1,14 @@
-import React from "react";
-import { StyleSheet, View, Pressable } from "react-native";
+import React, { useEffect } from "react";
+import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  FadeIn,
-  ZoomIn,
-} from "react-native-reanimated";
+import Animated, { FadeIn, ZoomIn } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, Typography } from "@/constants/theme";
+import { Spacing, Typography } from "@/constants/theme";
 import { RootStackParamList } from "@/types/navigation";
 
 type ConfirmationScreenProps = {
@@ -23,34 +16,19 @@ type ConfirmationScreenProps = {
   route: RouteProp<RootStackParamList, "Confirmation">;
 };
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
 export default function ConfirmationScreen({
   navigation,
-  route,
 }: ConfirmationScreenProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
-  const buttonScale = useSharedValue(1);
 
-  const { choice } = route.params;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigation.replace("Locked");
+    }, 2000);
 
-  const buttonAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: buttonScale.value }],
-  }));
-
-  const handlePressIn = () => {
-    buttonScale.value = withSpring(0.96, { damping: 15, stiffness: 150 });
-  };
-
-  const handlePressOut = () => {
-    buttonScale.value = withSpring(1, { damping: 15, stiffness: 150 });
-  };
-
-  const handleDone = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    navigation.replace("Locked");
-  };
+    return () => clearTimeout(timer);
+  }, [navigation]);
 
   return (
     <View
@@ -75,38 +53,11 @@ export default function ConfirmationScreen({
         </Animated.View>
 
         <Animated.View entering={FadeIn.duration(400).delay(200)}>
-          <ThemedText style={[styles.choice, { color: theme.text }]}>
-            {choice}
-          </ThemedText>
-
-          <ThemedText
-            style={[styles.subtext, { color: theme.textSecondary }]}
-          >
-            See you tomorrow.
+          <ThemedText style={[styles.heading, { color: theme.text }]}>
+            You're done for today
           </ThemedText>
         </Animated.View>
       </View>
-
-      <Animated.View
-        entering={FadeIn.duration(400).delay(400)}
-        style={styles.buttonContainer}
-      >
-        <AnimatedPressable
-          onPress={handleDone}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          style={[
-            styles.button,
-            { backgroundColor: theme.link },
-            buttonAnimatedStyle,
-          ]}
-          testID="button-done"
-        >
-          <ThemedText style={[styles.buttonText, { color: theme.buttonText }]}>
-            Done
-          </ThemedText>
-        </AnimatedPressable>
-      </Animated.View>
     </View>
   );
 }
@@ -115,7 +66,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: Spacing["2xl"],
-    justifyContent: "space-between",
   },
   content: {
     flex: 1,
@@ -130,26 +80,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: Spacing["3xl"],
   },
-  choice: {
-    ...Typography.h2,
+  heading: {
+    ...Typography.h4,
     textAlign: "center",
-    marginBottom: Spacing.md,
-  },
-  subtext: {
-    ...Typography.body,
-    textAlign: "center",
-  },
-  buttonContainer: {
-    width: "100%",
-  },
-  button: {
-    width: "100%",
-    height: Spacing.buttonHeight,
-    borderRadius: BorderRadius.none,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonText: {
-    ...Typography.button,
   },
 });
