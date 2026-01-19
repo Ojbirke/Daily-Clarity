@@ -170,6 +170,29 @@ function configureExpoAndLanding(app: express.Application) {
   const landingPageTemplate = fs.readFileSync(templatePath, "utf-8");
   const appName = getAppName();
 
+  const supportPagePath = path.resolve(
+    process.cwd(),
+    "server",
+    "templates",
+    "support.html",
+  );
+  const privacyPagePath = path.resolve(
+    process.cwd(),
+    "server",
+    "templates",
+    "privacy.html",
+  );
+
+  app.get("/support", (_req: Request, res: Response) => {
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.sendFile(supportPagePath);
+  });
+
+  app.get("/privacy", (_req: Request, res: Response) => {
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.sendFile(privacyPagePath);
+  });
+
   log("Serving static Expo files with dynamic manifest routing");
 
   app.use((req: Request, res: Response, next: NextFunction) => {
