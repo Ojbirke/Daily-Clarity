@@ -14,7 +14,7 @@ import Animated, {
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
-import { getTodayEntry, DailyEntry } from "@/storage/localStorage";
+import { getTodayEntry, DailyEntry, clearAllEntries } from "@/storage/localStorage";
 import { RootStackParamList } from "@/types/navigation";
 
 type LockedScreenProps = {
@@ -58,6 +58,12 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
     } else {
       navigation.navigate("PremiumGate");
     }
+  };
+
+  const handleReset = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await clearAllEntries();
+    navigation.replace("Question");
   };
 
   return (
@@ -123,6 +129,16 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
             View Patterns
           </ThemedText>
         </AnimatedPressable>
+
+        <Pressable
+          onPress={handleReset}
+          style={styles.resetButton}
+          testID="button-reset"
+        >
+          <ThemedText style={[styles.resetText, { color: theme.textSecondary }]}>
+            Reset (testing only)
+          </ThemedText>
+        </Pressable>
       </Animated.View>
     </View>
   );
@@ -173,5 +189,13 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...Typography.button,
+  },
+  resetButton: {
+    marginTop: Spacing.lg,
+    alignItems: "center",
+    paddingVertical: Spacing.md,
+  },
+  resetText: {
+    ...Typography.caption,
   },
 });
