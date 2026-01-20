@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Pressable } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import { StyleSheet, View, Pressable, AppState, AppStateStatus } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -14,7 +14,7 @@ import Animated, {
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
-import { getTodayEntry, DailyEntry, clearAllEntries } from "@/storage/localStorage";
+import { getTodayEntry, DailyEntry, hasCompletedToday } from "@/storage/localStorage";
 import { RootStackParamList } from "@/types/navigation";
 
 type LockedScreenProps = {
@@ -30,6 +30,7 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
   const { theme } = useTheme();
   const buttonScale = useSharedValue(1);
   const [todayEntry, setTodayEntry] = useState<DailyEntry | null>(null);
+  const appState = useRef(AppState.currentState);
 
   useEffect(() => {
     const loadTodayEntry = async () => {
@@ -38,6 +39,27 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
     };
     loadTodayEntry();
   }, []);
+
+  useEffect(() => {
+    const checkNewDay = async (nextAppState: AppStateStatus) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === "active"
+      ) {
+        const completed = await hasCompletedToday();
+        if (!completed) {
+          navigation.replace("Question");
+        }
+      }
+      appState.current = nextAppState;
+    };
+
+    const subscription = AppState.addEventListener("change", checkNewDay);
+
+    return () => {
+      subscription.remove();
+    };
+  }, [navigation]);
 
   const buttonAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: buttonScale.value }],
@@ -58,12 +80,6 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
     } else {
       navigation.navigate("PremiumGate");
     }
-  };
-
-  const handleReset = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await clearAllEntries();
-    navigation.replace("Question");
   };
 
   return (
@@ -130,15 +146,6 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
           </ThemedText>
         </AnimatedPressable>
 
-        <Pressable
-          onPress={handleReset}
-          style={styles.resetButton}
-          testID="button-reset"
-        >
-          <ThemedText style={[styles.resetText, { color: theme.textSecondary }]}>
-            Reset (testing only)
-          </ThemedText>
-        </Pressable>
       </Animated.View>
     </View>
   );
@@ -189,13 +196,5 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...Typography.button,
-  },
-  resetButton: {
-    marginTop: Spacing.lg,
-    alignItems: "center",
-    paddingVertical: Spacing.md,
-  },
-  resetText: {
-    ...Typography.caption,
   },
 });
