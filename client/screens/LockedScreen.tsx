@@ -23,6 +23,12 @@ type LockedScreenProps = {
 
 const isPremium = false;
 
+const CHOICE_ICONS: Record<string, keyof typeof Feather.glyphMap> = {
+  Focus: "target",
+  Calm: "feather",
+  Energy: "zap",
+};
+
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function LockedScreen({ navigation }: LockedScreenProps) {
@@ -82,6 +88,10 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
     }
   };
 
+  const choiceIcon = todayEntry
+    ? CHOICE_ICONS[todayEntry.choice] || "check"
+    : "lock";
+
   return (
     <View
       style={[
@@ -101,21 +111,33 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
             { backgroundColor: theme.backgroundDefault },
           ]}
         >
-          <Feather name="lock" size={48} color={theme.textSecondary} />
+          <Feather name={choiceIcon} size={48} color={theme.text} />
         </Animated.View>
 
         <Animated.View entering={FadeIn.duration(400).delay(200)}>
           {todayEntry ? (
             <>
+              <ThemedText
+                style={[styles.intentionLabel, { color: theme.textSecondary }]}
+              >
+                TODAY'S INTENTION
+              </ThemedText>
               <ThemedText style={[styles.focusLabel, { color: theme.text }]}>
                 {todayEntry.choice}
               </ThemedText>
               {todayEntry.note ? (
-                <ThemedText
-                  style={[styles.noteText, { color: theme.textSecondary }]}
+                <View
+                  style={[
+                    styles.noteContainer,
+                    { backgroundColor: theme.backgroundDefault },
+                  ]}
                 >
-                  {todayEntry.note}
-                </ThemedText>
+                  <ThemedText
+                    style={[styles.noteText, { color: theme.textSecondary }]}
+                  >
+                    "{todayEntry.note}"
+                  </ThemedText>
+                </View>
               ) : null}
             </>
           ) : (
@@ -145,7 +167,6 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
             View Patterns
           </ThemedText>
         </AnimatedPressable>
-
       </Animated.View>
     </View>
   );
@@ -163,26 +184,40 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   iconContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: Spacing["3xl"],
+  },
+  intentionLabel: {
+    ...Typography.label,
+    textAlign: "center",
+    marginBottom: Spacing.sm,
+    letterSpacing: 2,
   },
   heading: {
     ...Typography.h4,
     textAlign: "center",
   },
   focusLabel: {
-    ...Typography.h2,
+    fontSize: 40,
+    lineHeight: 48,
+    fontWeight: "700",
     textAlign: "center",
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  noteContainer: {
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.none,
+    maxWidth: 300,
   },
   noteText: {
     ...Typography.body,
     textAlign: "center",
-    maxWidth: 280,
+    fontStyle: "italic",
   },
   buttonContainer: {
     width: "100%",
