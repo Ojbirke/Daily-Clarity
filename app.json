@@ -2,7 +2,7 @@
   "expo": {
     "name": "Daily Clarity",
     "slug": "daily-clarity",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "dailyclarity",
@@ -10,7 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.dailyclarity.app"
+      "bundleIdentifier": "com.dailyclarity.app",
+      "buildNumber": "3"
     },
     "android": {
       "adaptiveIcon": {
