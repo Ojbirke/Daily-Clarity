@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { StyleSheet, View, Pressable, AppState, AppStateStatus } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -21,7 +22,7 @@ type LockedScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, "Locked">;
 };
 
-const isPremium = false;
+const PREMIUM_KEY = "@daily_clarity_premium";
 
 const CHOICE_ICONS: Record<string, keyof typeof Feather.glyphMap> = {
   Focus: "target",
@@ -36,15 +37,40 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
   const { theme } = useTheme();
   const buttonScale = useSharedValue(1);
   const [todayEntry, setTodayEntry] = useState<DailyEntry | null>(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const tapCount = useRef(0);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const appState = useRef(AppState.currentState);
 
   useEffect(() => {
-    const loadTodayEntry = async () => {
+    const load = async () => {
       const entry = await getTodayEntry();
       setTodayEntry(entry);
+      const premiumFlag = await AsyncStorage.getItem(PREMIUM_KEY);
+      setIsPremium(premiumFlag === "true");
     };
-    loadTodayEntry();
+    load();
   }, []);
+
+  const handleSecretTap = useCallback(async () => {
+    tapCount.current += 1;
+    if (tapTimer.current) clearTimeout(tapTimer.current);
+    tapTimer.current = setTimeout(() => {
+      tapCount.current = 0;
+    }, 2000);
+
+    if (tapCount.current >= 5) {
+      tapCount.current = 0;
+      const newValue = !isPremium;
+      setIsPremium(newValue);
+      await AsyncStorage.setItem(PREMIUM_KEY, newValue ? "true" : "false");
+      Haptics.notificationAsync(
+        newValue
+          ? Haptics.NotificationFeedbackType.Success
+          : Haptics.NotificationFeedbackType.Warning
+      );
+    }
+  }, [isPremium]);
 
   useEffect(() => {
     const checkNewDay = async (nextAppState: AppStateStatus) => {
@@ -104,14 +130,16 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
       ]}
     >
       <View style={styles.content}>
-        <Animated.View
-          entering={FadeIn.duration(400).delay(100)}
-          style={[
-            styles.iconContainer,
-            { backgroundColor: theme.backgroundDefault },
-          ]}
-        >
-          <Feather name={choiceIcon} size={48} color={theme.text} />
+        <Animated.View entering={FadeIn.duration(400).delay(100)}>
+          <Pressable
+            onPress={handleSecretTap}
+            style={[
+              styles.iconContainer,
+              { backgroundColor: theme.backgroundDefault },
+            ]}
+          >
+            <Feather name={choiceIcon} size={48} color={theme.text} />
+          </Pressable>
         </Animated.View>
 
         <Animated.View entering={FadeIn.duration(400).delay(200)}>
