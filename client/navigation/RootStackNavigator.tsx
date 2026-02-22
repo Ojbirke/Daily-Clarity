@@ -9,7 +9,6 @@ import NoteScreen from "@/screens/NoteScreen";
 import ConfirmationScreen from "@/screens/ConfirmationScreen";
 import LockedScreen from "@/screens/LockedScreen";
 import PatternsScreen from "@/screens/PatternsScreen";
-import PremiumGateScreen from "@/screens/PremiumGateScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 import { RootStackParamList } from "@/types/navigation";
@@ -55,20 +54,6 @@ export default function RootStackNavigator() {
         options={({ navigation }) => ({
           headerShown: true,
           headerTitle: "Patterns",
-          headerLeft: () => (
-            <HeaderButton onPress={() => navigation.goBack()}>
-              <Feather name="arrow-left" size={24} color={theme.text} />
-            </HeaderButton>
-          ),
-          animation: "slide_from_right",
-        })}
-      />
-      <Stack.Screen
-        name="PremiumGate"
-        component={PremiumGateScreen}
-        options={({ navigation }) => ({
-          headerShown: true,
-          headerTitle: "",
           headerLeft: () => (
             <HeaderButton onPress={() => navigation.goBack()}>
               <Feather name="arrow-left" size={24} color={theme.text} />
