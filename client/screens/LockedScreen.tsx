@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { StyleSheet, View, Pressable, AppState, AppStateStatus } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -8,7 +8,14 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withRepeat,
+  withSequence,
+  withTiming,
+  withDelay,
+  interpolateColor,
   FadeIn,
+  Easing,
+  cancelAnimation,
 } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -27,14 +34,45 @@ const CHOICE_ICONS: Record<string, keyof typeof Feather.glyphMap> = {
   Energy: "zap",
 };
 
+const MOOD_COLORS = {
+  Focus: {
+    background: "#EDE9FE",
+    iconBg: "#DDD6FE",
+    text: "#4C1D95",
+    textSecondary: "#6D28D9",
+    accent: "#7C3AED",
+    buttonBg: "#DDD6FE",
+  },
+  Calm: {
+    background: "#ECFDF5",
+    iconBg: "#D1FAE5",
+    text: "#064E3B",
+    textSecondary: "#047857",
+    accent: "#10B981",
+    buttonBg: "#D1FAE5",
+  },
+  Energy: {
+    background: "#FFF7ED",
+    iconBg: "#FFEDD5",
+    text: "#7C2D12",
+    textSecondary: "#C2410C",
+    accent: "#F97316",
+    buttonBg: "#FFEDD5",
+  },
+};
+
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function LockedScreen({ navigation }: LockedScreenProps) {
   const insets = useSafeAreaInsets();
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const buttonScale = useSharedValue(1);
   const [todayEntry, setTodayEntry] = useState<DailyEntry | null>(null);
+  const [moodActive, setMoodActive] = useState(false);
   const appState = useRef(AppState.currentState);
+
+  const iconBounce = useSharedValue(0);
+  const colorTransition = useSharedValue(0);
 
   useEffect(() => {
     const loadTodayEntry = async () => {
@@ -43,6 +81,57 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
     };
     loadTodayEntry();
   }, []);
+
+  useEffect(() => {
+    if (todayEntry) {
+      iconBounce.value = withDelay(
+        800,
+        withRepeat(
+          withSequence(
+            withTiming(-8, { duration: 300, easing: Easing.out(Easing.quad) }),
+            withTiming(0, { duration: 400, easing: Easing.bounce }),
+            withTiming(0, { duration: 2000 }),
+          ),
+          -1,
+          false,
+        ),
+      );
+    }
+
+    return () => {
+      cancelAnimation(iconBounce);
+    };
+  }, [todayEntry]);
+
+  const handleIconTap = useCallback(() => {
+    if (!todayEntry) return;
+
+    const next = !moodActive;
+    setMoodActive(next);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    colorTransition.value = withSpring(next ? 1 : 0, {
+      damping: 20,
+      stiffness: 80,
+    });
+
+    iconBounce.value = withSequence(
+      withTiming(-14, { duration: 200, easing: Easing.out(Easing.quad) }),
+      withTiming(0, { duration: 500, easing: Easing.bounce }),
+      withDelay(
+        500,
+        withRepeat(
+          withSequence(
+            withTiming(-8, { duration: 300, easing: Easing.out(Easing.quad) }),
+            withTiming(0, { duration: 400, easing: Easing.bounce }),
+            withTiming(0, { duration: 2000 }),
+          ),
+          -1,
+          false,
+        ),
+      ),
+    );
+  }, [todayEntry, moodActive]);
 
   useEffect(() => {
     const checkNewDay = async (nextAppState: AppStateStatus) => {
@@ -59,15 +148,91 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
     };
 
     const subscription = AppState.addEventListener("change", checkNewDay);
-
     return () => {
       subscription.remove();
     };
   }, [navigation]);
 
-  const buttonAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: buttonScale.value }],
-  }));
+  const choice = todayEntry?.choice || "Focus";
+  const mood = MOOD_COLORS[choice as keyof typeof MOOD_COLORS] || MOOD_COLORS.Focus;
+
+  const containerAnimatedStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      colorTransition.value,
+      [0, 1],
+      [theme.backgroundRoot, mood.background],
+    );
+    return { backgroundColor };
+  });
+
+  const iconContainerAnimatedStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      colorTransition.value,
+      [0, 1],
+      [theme.backgroundDefault, mood.iconBg],
+    );
+    return {
+      backgroundColor,
+      transform: [{ translateY: iconBounce.value }],
+    };
+  });
+
+  const textAnimatedStyle = useAnimatedStyle(() => {
+    const color = interpolateColor(
+      colorTransition.value,
+      [0, 1],
+      [theme.text, mood.text],
+    );
+    return { color };
+  });
+
+  const secondaryTextAnimatedStyle = useAnimatedStyle(() => {
+    const color = interpolateColor(
+      colorTransition.value,
+      [0, 1],
+      [theme.textSecondary, mood.textSecondary],
+    );
+    return { color };
+  });
+
+  const iconColorAnimatedStyle = useAnimatedStyle(() => {
+    const color = interpolateColor(
+      colorTransition.value,
+      [0, 1],
+      [theme.text, mood.accent],
+    );
+    return { color };
+  });
+
+  const noteContainerAnimatedStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      colorTransition.value,
+      [0, 1],
+      [theme.backgroundDefault, mood.iconBg],
+    );
+    return { backgroundColor };
+  });
+
+  const buttonAnimatedStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      colorTransition.value,
+      [0, 1],
+      [theme.backgroundDefault, mood.buttonBg],
+    );
+    return {
+      backgroundColor,
+      transform: [{ scale: buttonScale.value }],
+    };
+  });
+
+  const buttonTextAnimatedStyle = useAnimatedStyle(() => {
+    const color = interpolateColor(
+      colorTransition.value,
+      [0, 1],
+      [theme.text, mood.text],
+    );
+    return { color };
+  });
 
   const handlePressIn = () => {
     buttonScale.value = withSpring(0.96, { damping: 15, stiffness: 150 });
@@ -87,57 +252,58 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
     : "lock";
 
   return (
-    <View
+    <Animated.View
       style={[
         styles.container,
         {
-          backgroundColor: theme.backgroundRoot,
           paddingTop: insets.top + Spacing["6xl"],
           paddingBottom: insets.bottom + Spacing["6xl"],
         },
+        containerAnimatedStyle,
       ]}
     >
       <View style={styles.content}>
-        <Animated.View
-          entering={FadeIn.duration(400).delay(100)}
-          style={[
-            styles.iconContainer,
-            { backgroundColor: theme.backgroundDefault },
-          ]}
-        >
-          <Feather name={choiceIcon} size={48} color={theme.text} />
+        <Animated.View entering={FadeIn.duration(400).delay(100)}>
+          <Pressable onPress={handleIconTap} testID="button-mood-toggle">
+            <Animated.View
+              style={[styles.iconContainer, iconContainerAnimatedStyle]}
+            >
+              <AnimatedFeatherIcon
+                name={choiceIcon}
+                size={48}
+                colorStyle={iconColorAnimatedStyle}
+              />
+            </Animated.View>
+          </Pressable>
         </Animated.View>
 
         <Animated.View entering={FadeIn.duration(400).delay(200)}>
           {todayEntry ? (
             <>
-              <ThemedText
-                style={[styles.intentionLabel, { color: theme.textSecondary }]}
+              <Animated.Text
+                style={[styles.intentionLabel, secondaryTextAnimatedStyle]}
               >
                 TODAY'S INTENTION
-              </ThemedText>
-              <ThemedText style={[styles.focusLabel, { color: theme.text }]}>
+              </Animated.Text>
+              <Animated.Text style={[styles.focusLabel, textAnimatedStyle]}>
                 {todayEntry.choice}
-              </ThemedText>
+              </Animated.Text>
               {todayEntry.note ? (
-                <View
-                  style={[
-                    styles.noteContainer,
-                    { backgroundColor: theme.backgroundDefault },
-                  ]}
+                <Animated.View
+                  style={[styles.noteContainer, noteContainerAnimatedStyle]}
                 >
-                  <ThemedText
-                    style={[styles.noteText, { color: theme.textSecondary }]}
+                  <Animated.Text
+                    style={[styles.noteText, secondaryTextAnimatedStyle]}
                   >
                     "{todayEntry.note}"
-                  </ThemedText>
-                </View>
+                  </Animated.Text>
+                </Animated.View>
               ) : null}
             </>
           ) : (
-            <ThemedText style={[styles.heading, { color: theme.text }]}>
+            <Animated.Text style={[styles.heading, textAnimatedStyle]}>
               You've already checked in today.
-            </ThemedText>
+            </Animated.Text>
           )}
         </Animated.View>
       </View>
@@ -150,20 +316,29 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
           onPress={handleViewPatterns}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
-          style={[
-            styles.button,
-            { backgroundColor: theme.backgroundDefault },
-            buttonAnimatedStyle,
-          ]}
+          style={[styles.button, buttonAnimatedStyle]}
           testID="button-patterns"
         >
-          <ThemedText style={[styles.buttonText, { color: theme.text }]}>
+          <Animated.Text style={[styles.buttonText, buttonTextAnimatedStyle]}>
             View Patterns
-          </ThemedText>
+          </Animated.Text>
         </AnimatedPressable>
       </Animated.View>
-    </View>
+    </Animated.View>
   );
+}
+
+function AnimatedFeatherIcon({
+  name,
+  size,
+  colorStyle,
+}: {
+  name: keyof typeof Feather.glyphMap;
+  size: number;
+  colorStyle: any;
+}) {
+  const AnimatedIcon = Animated.createAnimatedComponent(Feather);
+  return <AnimatedIcon name={name} size={size} style={colorStyle} />;
 }
 
 const styles = StyleSheet.create({
