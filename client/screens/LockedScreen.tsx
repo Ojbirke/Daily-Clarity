@@ -20,7 +20,7 @@ import Animated, {
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
-import { getTodayEntry, DailyEntry, hasCompletedToday } from "@/storage/localStorage";
+import { getTodayEntry, DailyEntry, hasCompletedToday, savePalette, getSavedPalette } from "@/storage/localStorage";
 import { RootStackParamList } from "@/types/navigation";
 
 type LockedScreenProps = {
@@ -103,11 +103,18 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
   const fadeProgress = useSharedValue(0);
 
   useEffect(() => {
-    const loadTodayEntry = async () => {
+    const loadData = async () => {
       const entry = await getTodayEntry();
       setTodayEntry(entry);
+
+      const saved = await getSavedPalette();
+      if (saved) {
+        setCurrentPalette(saved.palette as MoodPalette);
+        setMoodActive(true);
+        fadeProgress.value = 1;
+      }
     };
-    loadTodayEntry();
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -144,6 +151,7 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
     fadeProgress.value = 0;
     setCurrentPalette(palette);
     setMoodActive(true);
+    savePalette(palette);
 
     fadeProgress.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.quad) });
 

@@ -76,3 +76,40 @@ export async function saveEntry(
 export async function clearAllEntries(): Promise<void> {
   await AsyncStorage.removeItem(ENTRIES_KEY);
 }
+
+const PALETTE_KEY = "@daily_clarity_palette";
+
+export interface SavedPalette {
+  date: string;
+  palette: {
+    background: string;
+    iconBg: string;
+    text: string;
+    textSecondary: string;
+    accent: string;
+    buttonBg: string;
+  };
+}
+
+export async function savePalette(palette: SavedPalette["palette"]): Promise<void> {
+  const data: SavedPalette = {
+    date: getTodayDateString(),
+    palette,
+  };
+  await AsyncStorage.setItem(PALETTE_KEY, JSON.stringify(data));
+}
+
+export async function getSavedPalette(): Promise<SavedPalette | null> {
+  try {
+    const json = await AsyncStorage.getItem(PALETTE_KEY);
+    if (json) {
+      const data: SavedPalette = JSON.parse(json);
+      if (data.date === getTodayDateString()) {
+        return data;
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
