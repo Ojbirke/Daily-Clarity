@@ -7,7 +7,7 @@ import Animated, { FadeIn } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, Typography } from "@/constants/theme";
-import { getAllEntries, ClarityChoice } from "@/storage/localStorage";
+import { getAllEntries, ClarityChoice, getSavedPalette, SavedPalette } from "@/storage/localStorage";
 
 type ChoiceCounts = Record<ClarityChoice, number>;
 
@@ -22,6 +22,7 @@ export default function PatternsScreen() {
   });
   const [mostCommon, setMostCommon] = useState<ClarityChoice | null>(null);
   const [loading, setLoading] = useState(true);
+  const [palette, setPalette] = useState<SavedPalette["palette"] | null>(null);
 
   useEffect(() => {
     loadPatterns();
@@ -56,10 +57,21 @@ export default function PatternsScreen() {
     });
 
     setMostCommon(maxChoice);
+
+    const saved = await getSavedPalette();
+    if (saved) {
+      setPalette(saved.palette);
+    }
+
     setLoading(false);
   };
 
   const totalEntries = counts.Focus + counts.Calm + counts.Energy;
+
+  const bg = palette ? palette.background : theme.backgroundRoot;
+  const textColor = palette ? palette.text : theme.text;
+  const secondaryColor = palette ? palette.textSecondary : theme.textSecondary;
+  const rowBg = palette ? palette.iconBg : theme.backgroundDefault;
 
   if (loading) {
     return (
@@ -67,13 +79,13 @@ export default function PatternsScreen() {
         style={[
           styles.container,
           {
-            backgroundColor: theme.backgroundRoot,
+            backgroundColor: bg,
             paddingTop: headerHeight + Spacing.lg,
           },
         ]}
       >
         <View style={styles.loadingContainer}>
-          <ThemedText style={{ color: theme.textSecondary }}>
+          <ThemedText style={{ color: secondaryColor }}>
             Loading...
           </ThemedText>
         </View>
@@ -86,46 +98,46 @@ export default function PatternsScreen() {
       style={[
         styles.container,
         {
-          backgroundColor: theme.backgroundRoot,
+          backgroundColor: bg,
           paddingTop: headerHeight + Spacing["3xl"],
           paddingBottom: insets.bottom + Spacing["3xl"],
         },
       ]}
     >
       <Animated.View entering={FadeIn.duration(400)} style={styles.content}>
-        <ThemedText style={[styles.title, { color: theme.text }]}>
+        <ThemedText style={[styles.title, { color: textColor }]}>
           Your patterns
         </ThemedText>
 
         <View style={styles.countersContainer}>
-          <View style={styles.counterRow}>
-            <ThemedText style={[styles.counterLabel, { color: theme.text }]}>
+          <View style={[styles.counterRow, { backgroundColor: rowBg }]}>
+            <ThemedText style={[styles.counterLabel, { color: textColor }]}>
               Focus
             </ThemedText>
             <ThemedText
-              style={[styles.counterValue, { color: theme.textSecondary }]}
+              style={[styles.counterValue, { color: secondaryColor }]}
             >
               {counts.Focus} {counts.Focus === 1 ? "day" : "days"}
             </ThemedText>
           </View>
 
-          <View style={styles.counterRow}>
-            <ThemedText style={[styles.counterLabel, { color: theme.text }]}>
+          <View style={[styles.counterRow, { backgroundColor: rowBg }]}>
+            <ThemedText style={[styles.counterLabel, { color: textColor }]}>
               Calm
             </ThemedText>
             <ThemedText
-              style={[styles.counterValue, { color: theme.textSecondary }]}
+              style={[styles.counterValue, { color: secondaryColor }]}
             >
               {counts.Calm} {counts.Calm === 1 ? "day" : "days"}
             </ThemedText>
           </View>
 
-          <View style={styles.counterRow}>
-            <ThemedText style={[styles.counterLabel, { color: theme.text }]}>
+          <View style={[styles.counterRow, { backgroundColor: rowBg }]}>
+            <ThemedText style={[styles.counterLabel, { color: textColor }]}>
               Energy
             </ThemedText>
             <ThemedText
-              style={[styles.counterValue, { color: theme.textSecondary }]}
+              style={[styles.counterValue, { color: secondaryColor }]}
             >
               {counts.Energy} {counts.Energy === 1 ? "day" : "days"}
             </ThemedText>
@@ -135,7 +147,7 @@ export default function PatternsScreen() {
         {totalEntries > 0 && mostCommon ? (
           <View style={styles.insightContainer}>
             <ThemedText
-              style={[styles.insightText, { color: theme.textSecondary }]}
+              style={[styles.insightText, { color: secondaryColor }]}
             >
               You choose {mostCommon} most often
             </ThemedText>
@@ -164,12 +176,14 @@ const styles = StyleSheet.create({
     marginBottom: Spacing["4xl"],
   },
   countersContainer: {
-    gap: Spacing["2xl"],
+    gap: Spacing.lg,
   },
   counterRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.lg,
   },
   counterLabel: {
     ...Typography.body,
