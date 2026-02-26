@@ -12,7 +12,6 @@ import Animated, {
   withSequence,
   withTiming,
   withDelay,
-  interpolateColor,
   FadeIn,
   Easing,
   cancelAnimation,
@@ -34,7 +33,16 @@ const CHOICE_ICONS: Record<string, keyof typeof Feather.glyphMap> = {
   Energy: "zap",
 };
 
-const MOOD_PALETTES = {
+type MoodPalette = {
+  background: string;
+  iconBg: string;
+  text: string;
+  textSecondary: string;
+  accent: string;
+  buttonBg: string;
+};
+
+const MOOD_PALETTES: Record<string, MoodPalette[]> = {
   Focus: [
     { background: "#EDE9FE", iconBg: "#DDD6FE", text: "#4C1D95", textSecondary: "#6D28D9", accent: "#7C3AED", buttonBg: "#DDD6FE" },
     { background: "#E0E7FF", iconBg: "#C7D2FE", text: "#312E81", textSecondary: "#4338CA", accent: "#6366F1", buttonBg: "#C7D2FE" },
@@ -73,8 +81,8 @@ const MOOD_PALETTES = {
   ],
 };
 
-function getRandomPalette(choice: string) {
-  const palettes = MOOD_PALETTES[choice as keyof typeof MOOD_PALETTES];
+function getRandomPalette(choice: string): MoodPalette {
+  const palettes = MOOD_PALETTES[choice];
   if (!palettes) return MOOD_PALETTES.Focus[0];
   return palettes[Math.floor(Math.random() * palettes.length)];
 }
@@ -83,15 +91,16 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function LockedScreen({ navigation }: LockedScreenProps) {
   const insets = useSafeAreaInsets();
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
   const buttonScale = useSharedValue(1);
   const [todayEntry, setTodayEntry] = useState<DailyEntry | null>(null);
   const [moodActive, setMoodActive] = useState(false);
-  const [currentPalette, setCurrentPalette] = useState(() => getRandomPalette("Focus"));
+  const [currentPalette, setCurrentPalette] = useState<MoodPalette | null>(null);
   const appState = useRef(AppState.currentState);
+  const isTapping = useRef(false);
 
   const iconBounce = useSharedValue(0);
-  const colorTransition = useSharedValue(0);
+  const fadeProgress = useSharedValue(0);
 
   useEffect(() => {
     const loadTodayEntry = async () => {
@@ -123,16 +132,22 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
   }, [todayEntry]);
 
   const handleIconTap = useCallback(() => {
-    if (!todayEntry) return;
+    if (!todayEntry || isTapping.current) return;
 
+    isTapping.current = true;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     const palette = getRandomPalette(todayEntry.choice);
+
+    cancelAnimation(fadeProgress);
+
+    fadeProgress.value = 0;
     setCurrentPalette(palette);
     setMoodActive(true);
-    colorTransition.value = 0;
-    colorTransition.value = withSpring(1, { damping: 20, stiffness: 80 });
 
+    fadeProgress.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.quad) });
+
+    cancelAnimation(iconBounce);
     iconBounce.value = withSequence(
       withTiming(-14, { duration: 200, easing: Easing.out(Easing.quad) }),
       withTiming(0, { duration: 500, easing: Easing.bounce }),
@@ -149,6 +164,10 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
         ),
       ),
     );
+
+    setTimeout(() => {
+      isTapping.current = false;
+    }, 400);
   }, [todayEntry]);
 
   useEffect(() => {
@@ -171,74 +190,17 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
     };
   }, [navigation]);
 
-  const containerAnimatedStyle = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      colorTransition.value,
-      [0, 1],
-      [theme.backgroundRoot, currentPalette.background],
-    );
-    return { backgroundColor };
-  });
+  const iconBounceStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: iconBounce.value }],
+  }));
 
-  const iconContainerAnimatedStyle = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      colorTransition.value,
-      [0, 1],
-      [theme.backgroundDefault, currentPalette.iconBg],
-    );
-    return {
-      backgroundColor,
-      transform: [{ translateY: iconBounce.value }],
-    };
-  });
+  const fadeStyle = useAnimatedStyle(() => ({
+    opacity: fadeProgress.value,
+  }));
 
-  const textAnimatedStyle = useAnimatedStyle(() => {
-    const color = interpolateColor(
-      colorTransition.value,
-      [0, 1],
-      [theme.text, currentPalette.text],
-    );
-    return { color };
-  });
-
-  const secondaryTextAnimatedStyle = useAnimatedStyle(() => {
-    const color = interpolateColor(
-      colorTransition.value,
-      [0, 1],
-      [theme.textSecondary, currentPalette.textSecondary],
-    );
-    return { color };
-  });
-
-  const noteContainerAnimatedStyle = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      colorTransition.value,
-      [0, 1],
-      [theme.backgroundDefault, currentPalette.iconBg],
-    );
-    return { backgroundColor };
-  });
-
-  const buttonAnimatedStyle = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      colorTransition.value,
-      [0, 1],
-      [theme.backgroundDefault, currentPalette.buttonBg],
-    );
-    return {
-      backgroundColor,
-      transform: [{ scale: buttonScale.value }],
-    };
-  });
-
-  const buttonTextAnimatedStyle = useAnimatedStyle(() => {
-    const color = interpolateColor(
-      colorTransition.value,
-      [0, 1],
-      [theme.text, currentPalette.text],
-    );
-    return { color };
-  });
+  const buttonAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonScale.value }],
+  }));
 
   const handlePressIn = () => {
     buttonScale.value = withSpring(0.96, { damping: 15, stiffness: 150 });
@@ -257,28 +219,45 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
     ? CHOICE_ICONS[todayEntry.choice] || "check"
     : "lock";
 
+  const p = currentPalette;
+  const iconColor = moodActive && p ? p.accent : theme.text;
+
   return (
-    <Animated.View
+    <View
       style={[
         styles.container,
         {
+          backgroundColor: theme.backgroundRoot,
           paddingTop: insets.top + Spacing["6xl"],
           paddingBottom: insets.bottom + Spacing["6xl"],
         },
-        containerAnimatedStyle,
       ]}
     >
+      {moodActive && p ? (
+        <Animated.View
+          key={p.background}
+          style={[
+            StyleSheet.absoluteFill,
+            { backgroundColor: p.background },
+            fadeStyle,
+          ]}
+          pointerEvents="none"
+        />
+      ) : null}
+
       <View style={styles.content}>
         <Animated.View entering={FadeIn.duration(400).delay(100)}>
           <Pressable onPress={handleIconTap} testID="button-mood-toggle">
             <Animated.View
-              style={[styles.iconContainer, iconContainerAnimatedStyle]}
+              style={[
+                styles.iconContainer,
+                {
+                  backgroundColor: moodActive && p ? p.iconBg : theme.backgroundDefault,
+                },
+                iconBounceStyle,
+              ]}
             >
-              <Feather
-                name={choiceIcon}
-                size={48}
-                color={moodActive ? currentPalette.accent : theme.text}
-              />
+              <Feather name={choiceIcon} size={48} color={iconColor} />
             </Animated.View>
           </Pressable>
         </Animated.View>
@@ -286,30 +265,46 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
         <Animated.View entering={FadeIn.duration(400).delay(200)}>
           {todayEntry ? (
             <>
-              <Animated.Text
-                style={[styles.intentionLabel, secondaryTextAnimatedStyle]}
+              <ThemedText
+                style={[
+                  styles.intentionLabel,
+                  { color: moodActive && p ? p.textSecondary : theme.textSecondary },
+                ]}
               >
                 TODAY'S INTENTION
-              </Animated.Text>
-              <Animated.Text style={[styles.focusLabel, textAnimatedStyle]}>
+              </ThemedText>
+              <ThemedText
+                style={[
+                  styles.focusLabel,
+                  { color: moodActive && p ? p.text : theme.text },
+                ]}
+              >
                 {todayEntry.choice}
-              </Animated.Text>
+              </ThemedText>
               {todayEntry.note ? (
-                <Animated.View
-                  style={[styles.noteContainer, noteContainerAnimatedStyle]}
+                <View
+                  style={[
+                    styles.noteContainer,
+                    {
+                      backgroundColor: moodActive && p ? p.iconBg : theme.backgroundDefault,
+                    },
+                  ]}
                 >
-                  <Animated.Text
-                    style={[styles.noteText, secondaryTextAnimatedStyle]}
+                  <ThemedText
+                    style={[
+                      styles.noteText,
+                      { color: moodActive && p ? p.textSecondary : theme.textSecondary },
+                    ]}
                   >
                     "{todayEntry.note}"
-                  </Animated.Text>
-                </Animated.View>
+                  </ThemedText>
+                </View>
               ) : null}
             </>
           ) : (
-            <Animated.Text style={[styles.heading, textAnimatedStyle]}>
+            <ThemedText style={[styles.heading, { color: theme.text }]}>
               You've already checked in today.
-            </Animated.Text>
+            </ThemedText>
           )}
         </Animated.View>
       </View>
@@ -322,15 +317,26 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
           onPress={handleViewPatterns}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
-          style={[styles.button, buttonAnimatedStyle]}
+          style={[
+            styles.button,
+            {
+              backgroundColor: moodActive && p ? p.buttonBg : theme.backgroundDefault,
+            },
+            buttonAnimatedStyle,
+          ]}
           testID="button-patterns"
         >
-          <Animated.Text style={[styles.buttonText, buttonTextAnimatedStyle]}>
+          <ThemedText
+            style={[
+              styles.buttonText,
+              { color: moodActive && p ? p.text : theme.text },
+            ]}
+          >
             View Patterns
-          </Animated.Text>
+          </ThemedText>
         </AnimatedPressable>
       </Animated.View>
-    </Animated.View>
+    </View>
   );
 }
 
