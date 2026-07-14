@@ -20,7 +20,7 @@ import Animated, {
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
-import { getTodayEntry, DailyEntry, hasCompletedToday, savePalette, getSavedPalette } from "@/storage/localStorage";
+import { getTodayEntry, DailyEntry, hasCompletedToday, savePalette, getSavedPalette, getAllEntries, calculateStreak } from "@/storage/localStorage";
 import { RootStackParamList } from "@/types/navigation";
 
 type LockedScreenProps = {
@@ -94,6 +94,7 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
   const { theme } = useTheme();
   const buttonScale = useSharedValue(1);
   const [todayEntry, setTodayEntry] = useState<DailyEntry | null>(null);
+  const [streak, setStreak] = useState(0);
   const [moodActive, setMoodActive] = useState(false);
   const [currentPalette, setCurrentPalette] = useState<MoodPalette | null>(null);
   const appState = useRef(AppState.currentState);
@@ -106,6 +107,9 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
     const loadData = async () => {
       const entry = await getTodayEntry();
       setTodayEntry(entry);
+
+      const entries = await getAllEntries();
+      setStreak(calculateStreak(entries));
 
       const saved = await getSavedPalette();
       if (saved) {
@@ -289,6 +293,25 @@ export default function LockedScreen({ navigation }: LockedScreenProps) {
               >
                 {todayEntry.choice}
               </ThemedText>
+              {streak > 0 ? (
+                <View
+                  style={[
+                    styles.streakBadge,
+                    {
+                      backgroundColor: moodActive && p ? p.iconBg : theme.backgroundDefault,
+                    },
+                  ]}
+                >
+                  <ThemedText
+                    style={[
+                      styles.streakText,
+                      { color: moodActive && p ? p.text : theme.text },
+                    ]}
+                  >
+                    {`🔥 ${streak} day streak`}
+                  </ThemedText>
+                </View>
+              ) : null}
               {todayEntry.note ? (
                 <View
                   style={[
@@ -383,6 +406,18 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textAlign: "center",
     marginBottom: Spacing.xl,
+  },
+  streakBadge: {
+    alignSelf: "center",
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    marginBottom: Spacing.xl,
+  },
+  streakText: {
+    ...Typography.small,
+    fontWeight: "600",
+    letterSpacing: 0.5,
   },
   noteContainer: {
     paddingHorizontal: Spacing.xl,

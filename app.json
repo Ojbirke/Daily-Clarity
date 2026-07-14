@@ -2,7 +2,7 @@
   "expo": {
     "name": "Daily Clarity",
     "slug": "daily-clarity",
-    "version": "1.0.6",
+    "version": "2.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "dailyclarity",
@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.dailyclarity.app",
-      "buildNumber": "7"
+      "buildNumber": "8"
     },
     "android": {
       "adaptiveIcon": {
@@ -42,6 +42,12 @@
     ],
     "experiments": {
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6f10645f-7646-460c-8cf4-03148bb7ab86"
+      }
+    },
+    "owner": "ojbirke"
   }
 }

@@ -7,7 +7,7 @@ import Animated, { FadeIn } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, Typography } from "@/constants/theme";
-import { getAllEntries, ClarityChoice, getSavedPalette, SavedPalette } from "@/storage/localStorage";
+import { getAllEntries, ClarityChoice, getSavedPalette, SavedPalette, calculateStreak } from "@/storage/localStorage";
 
 type ChoiceCounts = Record<ClarityChoice, number>;
 
@@ -21,6 +21,7 @@ export default function PatternsScreen() {
     Energy: 0,
   });
   const [mostCommon, setMostCommon] = useState<ClarityChoice | null>(null);
+  const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
   const [palette, setPalette] = useState<SavedPalette["palette"] | null>(null);
 
@@ -44,6 +45,7 @@ export default function PatternsScreen() {
     });
 
     setCounts(newCounts);
+    setStreak(calculateStreak(entries));
 
     const choices: ClarityChoice[] = ["Focus", "Calm", "Energy"];
     let maxChoice: ClarityChoice | null = null;
@@ -109,6 +111,17 @@ export default function PatternsScreen() {
           Your patterns
         </ThemedText>
 
+        {totalEntries > 0 ? (
+          <View style={[styles.streakCard, { backgroundColor: rowBg }]}>
+            <ThemedText style={[styles.streakNumber, { color: textColor }]}>
+              {`🔥 ${streak}`}
+            </ThemedText>
+            <ThemedText style={[styles.streakLabel, { color: secondaryColor }]}>
+              day streak
+            </ThemedText>
+          </View>
+        ) : null}
+
         <View style={styles.countersContainer}>
           <View style={[styles.counterRow, { backgroundColor: rowBg }]}>
             <ThemedText style={[styles.counterLabel, { color: textColor }]}>
@@ -173,7 +186,20 @@ const styles = StyleSheet.create({
   },
   title: {
     ...Typography.h2,
-    marginBottom: Spacing["4xl"],
+    marginBottom: Spacing["3xl"],
+  },
+  streakCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing["3xl"],
+    marginBottom: Spacing["3xl"],
+  },
+  streakNumber: {
+    ...Typography.h1,
+    marginBottom: Spacing.xs,
+  },
+  streakLabel: {
+    ...Typography.label,
   },
   countersContainer: {
     gap: Spacing.lg,

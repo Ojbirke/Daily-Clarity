@@ -1,6 +1,5 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
-import { ClarityChoice } from "@/storage/localStorage";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -12,11 +11,12 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const REMINDER_MESSAGES: Record<ClarityChoice, string> = {
-  Focus: "Stay with it. Your focus is your power today.",
-  Calm: "Breathe. You chose calm for a reason.",
-  Energy: "Keep moving. Your energy is carrying you today.",
-};
+// Time of day the daily check-in reminder fires (local device time).
+const REMINDER_HOUR = 9;
+const REMINDER_MINUTE = 0;
+
+const REMINDER_TITLE = "Daily Clarity";
+const REMINDER_BODY = "What matters most today? Take a moment to check in.";
 
 export async function requestNotificationPermission(): Promise<boolean> {
   if (Platform.OS === "web") return false;
@@ -30,44 +30,27 @@ export async function requestNotificationPermission(): Promise<boolean> {
   return status === "granted";
 }
 
-export async function scheduleReminderNotification(
-  choice: ClarityChoice
-): Promise<void> {
+/**
+ * Schedules a single daily, recurring reminder that brings the user back to
+ * check in each morning. Idempotent: clears any previously scheduled reminder
+ * before adding the new one, so it's safe to call on every check-in.
+ */
+export async function scheduleDailyReminder(): Promise<void> {
   try {
     const hasPermission = await requestNotificationPermission();
     if (!hasPermission) return;
 
     await Notifications.cancelAllScheduledNotificationsAsync();
 
-    const now = new Date();
-    const reminderHour = 14;
-    const reminder = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      reminderHour,
-      0,
-      0
-    );
-
-    if (reminder.getTime() <= now.getTime()) {
-      reminder.setHours(now.getHours() + 1);
-      reminder.setMinutes(0);
-    }
-
-    const secondsUntilReminder = Math.max(
-      60,
-      Math.floor((reminder.getTime() - now.getTime()) / 1000)
-    );
-
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: `Today: ${choice}`,
-        body: REMINDER_MESSAGES[choice],
+        title: REMINDER_TITLE,
+        body: REMINDER_BODY,
       },
       trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds: secondsUntilReminder,
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: REMINDER_HOUR,
+        minute: REMINDER_MINUTE,
       },
     });
   } catch {}

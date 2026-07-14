@@ -1,0 +1,74 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "info": {
+      "en-US": {
+        "title": "Daily Clarity: Focus & Calm",
+        "subtitle": "One mindful check-in a day",
+        "description": "Daily Clarity is a simple daily check-in to help you focus on what you need most — in under one minute.\n\nEach day, choose one intention:\nFocus. Calm. Or Energy.\n\nThat's it.\n\nNo accounts.\nNo feeds.\nNo pressure.\n\nJust one clear moment a day.\n\nHOW IT WORKS\n• Open the app once a day\n• Choose Focus, Calm, or Energy\n• Optionally add a short note\n• You're done for today\n\nYour choice is locked for the day, encouraging presence instead of overthinking.\n\nBUILD A STREAK\nSee how many days in a row you've checked in. A calm nudge to come back — with no pressure.\n\nCOLORS THAT MATCH YOUR DAY\nTap the icon on the locked screen to activate color themes. 10 unique palettes for each choice — Focus, Calm, and Energy.\n\nPATTERNS\nSee your choices over time on the Patterns screen. Completely free.\n\nWHY PEOPLE USE DAILY CLARITY\n• To start the day with intention\n• To slow down without journaling\n• To build awareness without tracking everything\n• To reflect — without being overwhelmed\n\nIf you'd like, you can turn on a gentle daily reminder for your check-in. It's entirely optional — you're in control.\n\nDaily Clarity is not a habit tracker or a mental health app. It's a quiet space for one small, intentional decision.\n\nPRIVACY\nDaily Clarity respects your privacy.\nAll data stays on your device.\nNo accounts. No tracking.",
+        "keywords": [
+          "mood",
+          "intention",
+          "journal",
+          "habit",
+          "reflect",
+          "wellbeing",
+          "energy",
+          "mindfulness",
+          "gratitude",
+          "morning",
+          "mental",
+          "stress"
+        ],
+        "releaseNotes": "• New: build a streak — see how many days in a row you've checked in.\n• Optional, gentle daily reminder for your check-in.\n• Under-the-hood cleanup for better stability and performance.",
+        "promoText": "One clear moment a day. Choose your intention — Focus, Calm, or Energy — in under a minute, and build a quiet streak day by day.",
+        "supportUrl": "https://dailyclarity.managemyapps.app/support.html",
+        "marketingUrl": "https://dailyclarity.managemyapps.app/",
+        "privacyPolicyUrl": "https://dailyclarity.managemyapps.app/privacy.html"
+      },
+      "no": {
+        "title": "Daily Clarity: Fokus & Ro",
+        "subtitle": "Daglig innsjekk for sinnsro",
+        "description": "Daily Clarity er en enkel daglig innsjekk som hjelper deg å fokusere på det du trenger mest — på under ett minutt.\n\nHver dag velger du én intensjon:\nFokus. Ro. Eller Energi.\n\nSå enkelt er det.\n\nIngen konto.\nIngen feed.\nIngen mas.\n\nBare ett klart øyeblikk om dagen.\n\nSLIK FUNGERER DET\n• Åpne appen én gang om dagen\n• Velg Fokus, Ro eller Energi\n• Legg til et kort notat om du vil\n• Ferdig for i dag\n\nValget ditt låses for dagen — det oppmuntrer til nærvær i stedet for overtenkning.\n\nBYGG EN SERIE\nSe hvor mange dager på rad du har sjekket inn. En rolig motivasjon til å komme tilbake — helt uten press.\n\nFARGER SOM MATCHER DAGEN\nTrykk på ikonet på den låste skjermen for å aktivere fargetema. 10 unike paletter for hvert valg — Fokus, Ro og Energi.\n\nMØNSTRE\nSe valgene dine over tid på Mønstre-skjermen. Helt gratis.\n\nHVORFOR FOLK BRUKER DAILY CLARITY\n• For å starte dagen med intensjon\n• For å roe ned uten å skrive dagbok\n• For å bygge bevissthet uten å spore alt\n• For å reflektere — uten å bli overveldet\n\nVil du, kan du slå på en mild daglig påminnelse om dagens innsjekk. Du bestemmer selv — den er helt valgfri.\n\nDaily Clarity er verken en vaneteller eller en app for psykisk helse. Det er et stille rom for én liten, bevisst avgjørelse.\n\nPERSONVERN\nDaily Clarity respekterer personvernet ditt.\nAlle data blir værende på enheten din.\nIngen konto. Ingen sporing.",
+        "keywords": [
+          "humør",
+          "energi",
+          "intensjon",
+          "mindfulness",
+          "refleksjon",
+          "dagbok",
+          "vane",
+          "morgen",
+          "mental",
+          "velvære",
+          "stress",
+          "mål",
+          "rutine"
+        ],
+        "releaseNotes": "• Nytt: bygg en serie — se hvor mange dager på rad du har sjekket inn.\n• Valgfri, mild daglig påminnelse om dagens innsjekk.\n• Rydding under panseret for bedre stabilitet og ytelse.",
+        "promoText": "Ett klart øyeblikk om dagen. Velg dagens intensjon — Fokus, Ro eller Energi — på under ett minutt, og bygg en rolig serie dag for dag.",
+        "supportUrl": "https://dailyclarity.managemyapps.app/support.html",
+        "marketingUrl": "https://dailyclarity.managemyapps.app/",
+        "privacyPolicyUrl": "https://dailyclarity.managemyapps.app/privacy.html"
+      }
+    },
+    "categories": ["LIFESTYLE"],
+    "advisory": {
+      "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+      "contests": "NONE",
+      "gamblingSimulated": "NONE",
+      "horrorOrFearThemes": "NONE",
+      "matureOrSuggestiveThemes": "NONE",
+      "medicalOrTreatmentInformation": "NONE",
+      "profanityOrCrudeHumor": "NONE",
+      "sexualContentGraphicAndNudity": "NONE",
+      "sexualContentOrNudity": "NONE",
+      "violenceCartoonOrFantasy": "NONE",
+      "violenceRealistic": "NONE",
+      "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+      "gambling": false,
+      "unrestrictedWebAccess": false,
+      "kidsAgeBand": null
+    }
+  }
+}

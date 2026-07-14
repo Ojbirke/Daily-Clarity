@@ -11,12 +11,40 @@ export interface DailyEntry {
   createdAt: string;
 }
 
-export function getTodayDateString(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
+function formatDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+export function getTodayDateString(): string {
+  return formatDateString(new Date());
+}
+
+/**
+ * Returns the number of consecutive days (ending today) that have an entry.
+ * If today has no entry yet, the streak is measured through yesterday so an
+ * existing streak stays visible before the user checks in for the day.
+ */
+export function calculateStreak(entries: DailyEntry[]): number {
+  if (entries.length === 0) return 0;
+
+  const dates = new Set(entries.map((entry) => entry.date));
+  const cursor = new Date();
+
+  // If today isn't checked in yet, start counting from yesterday.
+  if (!dates.has(formatDateString(cursor))) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  let streak = 0;
+  while (dates.has(formatDateString(cursor))) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  return streak;
 }
 
 export async function getAllEntries(): Promise<DailyEntry[]> {
