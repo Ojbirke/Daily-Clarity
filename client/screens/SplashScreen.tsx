@@ -11,6 +11,7 @@ import Animated, {
 
 import { useTheme } from "@/hooks/useTheme";
 import { hasCompletedToday } from "@/storage/localStorage";
+import { syncWidget } from "@/utils/widget";
 import { RootStackParamList } from "@/types/navigation";
 
 type SplashScreenProps = {
@@ -28,6 +29,10 @@ export default function SplashScreen({ navigation }: SplashScreenProps) {
   useEffect(() => {
     const checkAndNavigate = async () => {
       const completed = await hasCompletedToday();
+
+      // Keep the home/lock-screen widget in sync on every launch (handles day
+      // rollover and streak changes even if the user doesn't check in).
+      syncWidget();
 
       const navigate = () => {
         if (completed) {

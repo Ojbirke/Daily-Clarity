@@ -11,7 +11,14 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.dailyclarity.app",
-      "buildNumber": "8"
+      "buildNumber": "8",
+      "appleTeamId": "63S8346PGC",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.security.application-groups": ["group.com.dailyclarity.app"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -38,7 +45,8 @@
             "backgroundColor": "#1A1A1A"
           }
         }
-      ]
+      ],
+      "@bacons/apple-targets"
     ],
     "experiments": {
       "reactCompiler": true

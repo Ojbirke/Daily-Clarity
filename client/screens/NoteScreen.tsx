@@ -25,6 +25,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
 import { saveEntry } from "@/storage/localStorage";
 import { scheduleDailyReminder } from "@/utils/notifications";
+import { syncWidget } from "@/utils/widget";
 import { RootStackParamList } from "@/types/navigation";
 
 type NoteScreenProps = {
@@ -82,6 +83,7 @@ export default function NoteScreen({ navigation, route }: NoteScreenProps) {
     try {
       await saveEntry(choice, note.trim());
       scheduleDailyReminder();
+      syncWidget();
       navigation.replace("Confirmation", { choice });
     } catch {
       setIsSaving(false);
